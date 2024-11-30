@@ -1,5 +1,6 @@
 package gm.zona_fit_swing.gui;
 
+import gm.zona_fit_swing.modelo.Cliente;
 import gm.zona_fit_swing.servicio.ClienteServicio;
 import gm.zona_fit_swing.servicio.IClienteServicio;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,8 @@ import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 @Component
 public class ZonaFitForma extends JFrame{
@@ -25,6 +28,7 @@ public class ZonaFitForma extends JFrame{
     public ZonaFitForma(ClienteServicio clienteServicio){
         this.clienteServicio = clienteServicio;
         iniciarForma();
+        guardarButton.addActionListener(e -> guardarCliente());
     }
 
     private void iniciarForma(){
@@ -57,5 +61,40 @@ public class ZonaFitForma extends JFrame{
             };
             this.tablaModeloClientes.addRow(renglonCliente);
         });
+    }
+
+    private void guardarCliente(){
+        if (nombreTexto.getText().equals("")){
+            mostrarMensaje("Proporciona un nombre");
+            nombreTexto.requestFocusInWindow();
+            return;
+        }
+        if (membresiaTexto.getText().equals("")){
+            mostrarMensaje("Proporciona una membresia");
+            membresiaTexto.requestFocusInWindow();
+            return;
+        }
+
+//        Serecupera los valores del formulario
+        var nombre = nombreTexto.getText();
+        var apellido = apellidoTexto.getText();
+        var membresia = Integer.parseInt(membresiaTexto.getText());
+        var cliente = new Cliente();
+        cliente.setNombre(nombre);
+        cliente.setApellido(apellido);
+        cliente.setMembresia(membresia);
+        this.clienteServicio.guardarCliente(cliente); //inserta el nuevo objeto en la base de datos
+        limpiarFormulario();
+        listarClientes();
+    }
+
+    private void limpiarFormulario(){
+        nombreTexto.setText("");
+        apellidoTexto.setText("");
+        membresiaTexto.setText("");
+    }
+
+    private void mostrarMensaje(String mensaje){
+        JOptionPane.showMessageDialog(this, mensaje);
     }
 }
