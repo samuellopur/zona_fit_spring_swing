@@ -39,6 +39,8 @@ public class ZonaFitForma extends JFrame{
                 cargarClienteSeleccionado();
             }
         });
+        eliminarButton.addActionListener(e -> eliminarCliente());
+        limpiarButton.addActionListener(e -> limpiarFormulario());
     }
 
     private void iniciarForma(){
@@ -50,10 +52,21 @@ public class ZonaFitForma extends JFrame{
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        this.tablaModeloClientes = new DefaultTableModel(0, 4);
+//        Evita la edición de los valores en las celdas de la tabla
+        this.tablaModeloClientes = new DefaultTableModel(0, 4){
+            @Override
+            public boolean isCellEditable(int row, int column){
+
+                return false;
+            }
+        };
+
         String[] cabeceros = {"Id", "Nombre", "Apellido", "Membresia"};
         this.tablaModeloClientes.setColumnIdentifiers(cabeceros);
         this.clientesTabla = new JTable(tablaModeloClientes);
+
+//        Restringir seleccíon de la tabla aun solo registro
+        this.clientesTabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 //        Cargar listado de clientes
         listarClientes();
@@ -74,18 +87,18 @@ public class ZonaFitForma extends JFrame{
     }
 
     private void guardarCliente(){
-        if (nombreTexto.getText().equals("")){
+        if (nombreTexto.getText().isEmpty()){
             mostrarMensaje("Proporciona un nombre");
             nombreTexto.requestFocusInWindow();
             return;
         }
-        if (membresiaTexto.getText().equals("")){
+        if (membresiaTexto.getText().isEmpty()){
             mostrarMensaje("Proporciona una membresia");
             membresiaTexto.requestFocusInWindow();
             return;
         }
 
-//        Serecupera los valores del formulario
+//        Se recupera los valores del formulario
         var nombre = nombreTexto.getText();
         var apellido = apellidoTexto.getText();
         var membresia = Integer.parseInt(membresiaTexto.getText());
@@ -111,6 +124,22 @@ public class ZonaFitForma extends JFrame{
             var membresia = clientesTabla.getModel().getValueAt(renglon, 3).toString();
             this.membresiaTexto.setText(membresia);
         }
+    }
+
+    private void eliminarCliente(){
+        var renglon = clientesTabla.getSelectedRow();
+        if (renglon != -1){
+            var idClienteStr = clientesTabla.getModel().getValueAt(renglon, 0).toString();
+            this.idCliente = Integer.parseInt(idClienteStr);
+            var cliente = new Cliente();
+            cliente.setId(this.idCliente);
+            clienteServicio.eliminarCliente(cliente);
+            mostrarMensaje("Cliente con id " + this.idCliente + "eliminado");
+            limpiarFormulario();
+            listarClientes();
+        }
+        else
+            mostrarMensaje("Debe seleccionar un cliente a eliminar");
     }
 
     private void limpiarFormulario(){
